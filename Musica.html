@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musicas Live Dirr</title>
+    <style>
+        #audioPlayer {
+            display: none;
+        }
+        #progressContainer {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        #progressBar {
+            width: 0;
+            height: 20px;
+            background-color: #ca4848;
+        }
+        #trackInfo {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="trackInfo"></div>
+    <div id="progressContainer">
+        <div id="progressBar"></div>
+    </div>
+    <audio id="audioPlayer" autoplay></audio>
+
+    <script>
+        const clientId = '39fe8097';
+        const clientSecret = '3cc90f6c46d3866d2e73d86a2cdf882f';
+        const audioPlayer = document.getElementById('audioPlayer');
+        const progressBar = document.getElementById('progressBar');
+        const trackInfo = document.getElementById('trackInfo');
+        let musicIndex = 0;
+        let musicList = [];
+
+        audioPlayer.volume = 0.5;
+
+        async function fetchMusicList() {
+            try {
+                const response = await fetch(`https://api.jamendo.com/v3.0/tracks/?client_id=${clientId}&format=jsonpretty&tags=electronic`);
+                const data = await response.json();
+                musicList = data.results;
+                playMusic();
+            } catch (error) {
+                console.error('Erro ao buscar a lista de músicas:', error);
+            }
+        }
+
+        function playMusic() {
+            if (musicList.length > 0) {
+                const currentTrack = musicList[musicIndex];
+                audioPlayer.src = currentTrack.audio;
+                trackInfo.textContent = `${currentTrack.artist_name} - ${currentTrack.name}`;
+                audioPlayer.play();
+                audioPlayer.onended = () => {
+                    musicIndex = (musicIndex + 1) % musicList.length;
+                    playMusic();
+                };
+                audioPlayer.ontimeupdate = updateProgressBar;
+            }
+        }
+
+        function updateProgressBar() {
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        window.onload = fetchMusicList;
+    </script>
+</body>
+</html>
