@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vozes Disponíveis</title>
+    <style>
+        body {
+            margin: 10px;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .voice {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .voice button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4ca1af;
+            color: white;
+            cursor: pointer;
+        }
+
+        .voice button:hover {
+            background-color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vozes Disponíveis</h1>
+        <form id="speakForm">
+            <input type="text" id="text" placeholder="Digite um texto" required>
+            <button type="submit">Falar</button>
+        </form>
+        <div id="response"></div>
+        <div id="voicesList"></div>
+    </div>
+
+    <script>
+        document.getElementById('speakForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const text = document.getElementById('text').value;
+            speakText(text);
+        });
+
+        function speakText(text, voice = null) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (voice) {
+                utterance.voice = voice;
+            }
+            window.speechSynthesis.speak(utterance);
+        }
+
+        window.onload = () => {
+            // Listar todas as vozes disponíveis quando estiverem carregadas
+            window.speechSynthesis.onvoiceschanged = () => {
+                const voices = window.speechSynthesis.getVoices();
+                const voicesList = document.getElementById('voicesList');
+                voicesList.innerHTML = voices.map(voice => `
+                    <div class="voice">
+                        ${voice.name} (${voice.lang})
+                        <button onclick="speakText('Este é um teste de voz.', window.speechSynthesis.getVoices().find(v => v.name === '${voice.name}'))">Testar</button>
+                    </div>
+                `).join('');
+            };
+        };
+    </script>
+</body>
+</html>
